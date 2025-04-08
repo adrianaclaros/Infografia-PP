@@ -1,0 +1,8 @@
+actor
+gatos
+idear
+baile
+solar
+nubes
+hielo
+lente
