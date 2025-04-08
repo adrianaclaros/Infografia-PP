@@ -2,22 +2,26 @@
 -- main.lua
 -----------------------------------------------------------------------------------------
 
---== CONFIGURACIÓN DE PANTALLA Y FONDO ==
+-- CONFIGURACIÓN DE PANTALLA Y FONDO 
+-- Definir el ancho y alto de la pantalla
 local CW = display.contentWidth
 local CH = display.contentHeight
 
+-- Cargar y posicionar el fondo de la pantalla
 local fondo = display.newImageRect("fondo1.jpeg", CW, CH)
 fondo.x = CW / 2
 fondo.y = CH / 2
 
---== MOSTRAR INSTRUCCIONES ==
+-- MOSTRAR INSTRUCCIONES 
 local function mostrarInstrucciones()
+    -- Crear un fondo oscuro para la superposición de las instrucciones
     local overlay = display.newRect(CW / 2, CH / 2, CW, CH)
     overlay:setFillColor(0, 0.5)
-
+    -- Crear las medidas del cuadro de instrucciones
     local popup = display.newRoundedRect(CW / 2, CH / 2, CW * 0.8, CH * 0.67, 20)
     popup:setFillColor(1)
 
+    -- Título de las instrucciones
     local titulo = display.newText({
         text = "¿Cómo jugar?",
         x = CW / 2,
@@ -27,6 +31,7 @@ local function mostrarInstrucciones()
     })
     titulo:setFillColor(0)
 
+    -- Cuerpo de las instrucciones
     local texto = [[
 Adivina la palabra secreta de 5 letras.
 
@@ -49,6 +54,7 @@ Tienes 6 intentos. ¡Suerte!
     })
     cuerpoTexto:setFillColor(0)
 
+    -- Botón para cerrar las instrucciones
     local cerrarBtn = display.newRoundedRect(CW / 2, CH / 2 + 120, 160, 40, 12)
     cerrarBtn:setFillColor(0.2, 0.6, 1)
 
@@ -61,6 +67,7 @@ Tienes 6 intentos. ¡Suerte!
     })
     cerrarTexto:setFillColor(1)
 
+    -- Cerrar ventana de instrucciones
     local function cerrar()
         overlay:removeSelf()
         popup:removeSelf()
@@ -85,18 +92,19 @@ helpButton:setFillColor(1, 1, 1)
 
 helpButton:addEventListener("tap", mostrarInstrucciones)
 
+-- Colores para los cuadros de resultado
 local colorVerde = {110/255,194/255,7/255}
 local colorAmarillo = {1,235/255,0}
 local colorGris = {0.7, 0.7, 0.7}
 
---== VARIABLES DEL JUEGO ==
+-- Propiedades de los cuadros
 local smallBoxSize = 20
 local largeRectWidth = 200
 local largeRectHeight = 30
 local spacing = 7
 local numSmallBoxes = 5
 
--- Crear los elementos gráficos
+-- Crear los elementos gráficos de los intentos
 local function createGraphicElement(yPosition)
     local group = display.newGroup()
     local rectX = CW / 2
@@ -108,6 +116,7 @@ local function createGraphicElement(yPosition)
     local startX = rectX - totalWidthSmallBoxes / 2 + smallBoxSize / 2
     local startY = largeRect.y + largeRectHeight / 2 + spacing + smallBoxSize / 2
 
+    -- Cuadros de texto
     for i = 1, numSmallBoxes do
         local box = display.newRect(startX + (i-1)*(smallBoxSize + spacing), startY, smallBoxSize, smallBoxSize)
         box.strokeWidth = 2
@@ -120,6 +129,7 @@ local function createGraphicElement(yPosition)
     return group
 end
 
+-- Cuadros de intentos
 local rects = {
     createGraphicElement(50),
     createGraphicElement(120),
@@ -133,7 +143,7 @@ local currentRectIndex = 1
 local letrasPorRect = {}
 local textosVisibles = {}
 
---== CARGAR PALABRAS ==
+-- CARGAR PALABRAS 
 local function cargarPalabras()
     local path = system.pathForFile("palabras.txt", system.ResourceDirectory)
     local palabras = {}
@@ -154,6 +164,7 @@ local function cargarPalabras()
     return palabras
 end
 
+-- Obtencion de la palabra secreta
 local function obtenerPalabraSecreta()
     local lista = cargarPalabras()
     if #lista == 0 then return nil end
@@ -163,7 +174,8 @@ end
 local palabraObjetivo = obtenerPalabraSecreta()
 print("Palabra secreta:", palabraObjetivo)
 
---== MENSAJE FINAL ==
+-- MENSAJE FINAL 
+-- Mensaje victoria/derrota
 local function mostrarMensajeFinal(titulo, mensaje)
     local overlay = display.newRect(CW / 2, CH / 2, CW, CH)
     overlay:setFillColor(0, 0, 0, 0.5)
@@ -180,6 +192,7 @@ local function mostrarMensajeFinal(titulo, mensaje)
     })
     mensajeText:setFillColor(0)
 
+    -- Boton para cerrar el mensaje
     local boton = display.newRoundedRect(CW / 2, CH / 2 + 70, 160, 40, 12)
     boton:setFillColor(0.2, 0.6, 1)
 
@@ -200,7 +213,8 @@ local function mostrarMensajeFinal(titulo, mensaje)
     boton:addEventListener("tap", cerrarPopup)
 end
 
---== TEXTO DINÁMICO ==
+-- TEXTO DINÁMICO
+-- Actualizacion del texto
 local function actualizarTexto()
     if textosVisibles[currentRectIndex] then
         textosVisibles[currentRectIndex]:removeSelf()
@@ -222,20 +236,21 @@ local function actualizarTexto()
     textosVisibles[currentRectIndex] = texto
 end
 
--------
+-- PISTAS DE COLORES
+-- Pintar los cuadros con los colores adecuados 
 local function pintarCuadros(palabraIngresada, palabraSecreta, grupo)
     local letrasSecreta = {}
     local usadasEnSecreta = {}
     local resultado = {}
 
-    -- Paso 1: Inicialización
+    -- Inicialización
     for i = 1, 5 do
         letrasSecreta[i] = palabraSecreta:sub(i, i)
         usadasEnSecreta[i] = false
-        resultado[i] = "gris"  -- Por defecto todos son grises
+        resultado[i] = "gris"  
     end
 
-    -- Paso 2: Revisar verdes
+    -- Revisar verdes
     for i = 1, 5 do
         local letraUsuario = palabraIngresada:sub(i, i)
         if letraUsuario == letrasSecreta[i] then
@@ -244,7 +259,7 @@ local function pintarCuadros(palabraIngresada, palabraSecreta, grupo)
         end
     end
 
-    -- Paso 3: Revisar amarillos
+    -- Revisar amarillos
     for i = 1, 5 do
         local letraUsuario = palabraIngresada:sub(i, i)
         if resultado[i] == "gris" then
@@ -258,7 +273,7 @@ local function pintarCuadros(palabraIngresada, palabraSecreta, grupo)
         end
     end
 
-    -- Paso 4: Pintar los cuadros según resultado
+    -- Pintar los cuadros según resultado
     for i = 1, 5 do
         if resultado[i] == "verde" then
             grupo[i+1]:setFillColor(unpack(colorVerde))
@@ -271,20 +286,23 @@ local function pintarCuadros(palabraIngresada, palabraSecreta, grupo)
 end
 
 
---== DETECCIÓN DE TECLADO ==
+-- DETECCIÓN DE TECLADO 
 local function onKeyEvent(event)
     if event.phase == "down" then
         local key = event.keyName
         local palabraActual = letrasPorRect[currentRectIndex] or ""
 
+        -- Agregar las letras
         if key:match("^[a-zA-Z]$") and #palabraActual < 5 then
             letrasPorRect[currentRectIndex] = palabraActual .. string.upper(key)
             actualizarTexto()
 
+        -- Borrar
         elseif key == "deleteBack" or key == "backspace" then
             letrasPorRect[currentRectIndex] = palabraActual:sub(1, -2)
             actualizarTexto()
 
+        -- Verificacion de la palabra
         elseif (key == "enter" or key == "return") and #palabraActual == 5 then
             local palabraUsuario = palabraActual:lower()
             pintarCuadros(palabraUsuario, palabraObjetivo, rects[currentRectIndex]) -- Pintar cuadros según aciertos
